@@ -3,3 +3,5 @@ flask-socketio
 opencv-python
 ultralytics
 eventlet
+sqlalchemy
+flask-cors
