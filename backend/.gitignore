@@ -1,0 +1,5 @@
+data
+best_drone.pt
+crowd_data.db
+__pycache__/
+uploads/
