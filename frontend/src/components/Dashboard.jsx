@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import socket from '../socket';
 import AlertBox from './AlertBox';
 import CrowdGraph from './CrowdGraph';
-import axios from 'axios';
+import StampedeAlert from './StampedeAlert';
+import '../styles/Dashboard.css';
 
 function AnimatedCount({ value }) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -54,29 +55,6 @@ function Dashboard() {
     return () => socket.off('crowd_update', handler);
   }, []);
 
-  // Poll recent counts endpoint to keep chart in sync on load
-  useEffect(() => {
-    let mounted = true;
-    const fetchRecent = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/recent_counts');
-        if (!mounted) return;
-        // server returns newest-first; show oldest->newest
-        const list = Array.isArray(res.data) ? res.data.slice().reverse() : [];
-        setChartData(list.map(r => ({ timestamp: r.timestamp || new Date().toLocaleTimeString(), count: r.count || 0 })));
-      } catch (err) {
-        // ignore — backend may not be running yet
-      }
-    };
-
-    fetchRecent();
-    const iv = setInterval(fetchRecent, 5000);
-    return () => {
-      mounted = false;
-      clearInterval(iv);
-    };
-  }, []);
-
   // Create an object URL to preview/play the selected video locally
   const [localVideoUrl, setLocalVideoUrl] = useState(null);
   const [serverFeedUrl, setServerFeedUrl] = useState('http://localhost:5000/video_feed');
@@ -105,39 +83,35 @@ function Dashboard() {
     if (f) setFile(f);
   };
 
-  const handleUpload = async () => {
-    if (!file) return alert('Please select a video first.');
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    const file = e.target.elements.video.files[0];
+    if (!file) return alert("Please select a video file.");
+    const localURL = URL.createObjectURL(file);
+    setPreviewURL(localURL);
 
-    const fd = new FormData();
-    fd.append('video', file);
-    fd.append('threshold', Number(thresholdRef.current) || 0);
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      const res = await axios.post('http://localhost:5000/upload_video', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120000, // large uploads may take time
+      setCount(0);
+      setAvgDensity(0);
+      setAlerts(0);
+      setStampede(false);
+      setIsMonitoring(false);
+
+      const res = await fetch("http://localhost:5000/upload_media", {
+        method: "POST",
+        body: formData,
       });
-      if (res?.data?.message) alert(res.data.message);
-      // clear chart so the new session starts fresh
-      setChartData([]);
-      // after successful upload, switch the video pane to the server-processed feed
-      // backend may stream the hashmap/processed frames at /video_feed
-      setShowServerFeed(true);
-      // if backend returned a custom feed url, use it
-      if (res?.data?.feed_url) {
-        try {
-          const url = new URL(res.data.feed_url, window.location.href).toString();
-          // replace the server feed endpoint if provided
-          // we'll store it in a ref-like state for img src
-          // but keep simple and replace the image/video src by setting a state
-          setServerFeedUrl(url);
-        } catch (e) {
-          // ignore invalid URL
-        }
+      const data = await res.json();
+      if (data.filename) {
+        setUploadedVideo(data.filename);
+        setIsMonitoring(true);
       }
     } catch (err) {
-      console.error(err?.response || err.message || err);
-      alert('Upload failed. Make sure backend is running on http://localhost:5000 and accepts /upload_video');
+      console.error(err);
+      alert("Upload failed.");
     }
   };
 
