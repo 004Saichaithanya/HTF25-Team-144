@@ -1,106 +1,143 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import socket from '../socket';
+import '../styles/AlertBox.css';
 
-// AlertBox now prefers receiving live `count` as a prop from Dashboard.
-// If `count` is not provided, it falls back to listening on socket 'crowd_update'.
-function AlertBox({ count: propCount, threshold = 10 }) {
-  const [currentCount, setCurrentCount] = useState(propCount ?? 0);
-  const [alert, setAlert] = useState(false);
-  const prevAlertRef = useRef(false);
+function AlertBox({ threshold }) {
+  const [currentCount, setCurrentCount] = useState(0);
+  const [risk, setRisk] = useState({ color: '#00d26a', text: '✅ Safe', level: 'SAFE' });
+  const [recentAlerts, setRecentAlerts] = useState([]);
 
-  // Hysteresis values to avoid flicker: turn alert on when > threshold, turn off when <= threshold - 2
-  const OFF_MARGIN = 2;
+  useEffect(() => {
+    socket.on('crowd_update', (data) => {
+      setCurrentCount(data.count);
+      updateRiskLevel(data.count);
+    });
 
-  // play a short beep when entering alert state
-  const playBeep = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = 880;
-      g.gain.value = 0.05;
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.start();
-      setTimeout(() => {
-        o.stop();
-        ctx.close();
-      }, 200);
-    } catch (e) {
-      // ignore if audio context not allowed
+    socket.on('alert_event', (alertData) => {
+      const newAlert = {
+        ...alertData,
+        timestamp: new Date().toLocaleTimeString(),
+        id: Date.now()
+      };
+      setRecentAlerts((prev) => [newAlert, ...prev].slice(0, 3));
+    });
+
+    return () => {
+      socket.off('crowd_update');
+      socket.off('alert_event');
+    };
+  }, [threshold]);
+
+  // 🧠 Function to set risk level based on crowd count
+  const updateRiskLevel = (count) => {
+    if (count > threshold * 2) {
+      setRisk({
+        color: '#ff1c1c',
+        text: '🚨 Critical Overcrowding',
+        level: 'CRITICAL'
+      });
+    } else if (count > threshold * 1.5) {
+      setRisk({
+        color: '#ff8c00',
+        text: '⚠️ High Density',
+        level: 'HIGH'
+      });
+    } else if (count > threshold) {
+      setRisk({
+        color: '#ffd700',
+        text: '⚡ Slightly Crowded',
+        level: 'MEDIUM'
+      });
+    } else {
+      setRisk({
+        color: '#00d26a',
+        text: '✅ Safe',
+        level: 'SAFE'
+      });
     }
   };
 
-  // Update from propCount (preferred)
-  useEffect(() => {
-    if (typeof propCount === 'number') {
-      setCurrentCount(propCount);
-      const shouldAlert = propCount > threshold;
-      const shouldClear = propCount <= (threshold - OFF_MARGIN);
-      if (shouldAlert && !prevAlertRef.current) {
-        setAlert(true);
-        playBeep();
-        prevAlertRef.current = true;
-      } else if (shouldClear && prevAlertRef.current) {
-        setAlert(false);
-        prevAlertRef.current = false;
-      }
-    }
-  }, [propCount, threshold]);
-
-  // Fallback: if parent doesn't provide count prop, listen to socket
-  useEffect(() => {
-    if (typeof propCount === 'number') return undefined;
-    const handler = data => {
-      const c = data?.count ?? 0;
-      setCurrentCount(c);
-      const shouldAlert = c > threshold;
-      const shouldClear = c <= (threshold - OFF_MARGIN);
-      if (shouldAlert && !prevAlertRef.current) {
-        setAlert(true);
-        playBeep();
-        prevAlertRef.current = true;
-      } else if (shouldClear && prevAlertRef.current) {
-        setAlert(false);
-        prevAlertRef.current = false;
-      }
-    };
-
-    socket.on('crowd_update', handler);
-    return () => socket.off('crowd_update', handler);
-  }, [propCount, threshold]);
-
   return (
-    <div style={{ marginTop: '30px', textAlign: 'center' }}>
-      {alert ? (
-        <div style={{
-          background: 'linear-gradient(90deg,#ff4d4d,#ff1c1c)',
+    <div className="alertbox">
+      {/* Main Alert Box */}
+      <div
+        style={{
+          backgroundColor: risk.color,
           color: 'white',
-          padding: '14px 26px',
+          padding: '14px 28px',
           borderRadius: '12px',
-          fontSize: '1.35rem',
-          fontWeight: 700,
-          boxShadow: '0 0 18px rgba(255,77,77,0.6)',
-          transform: 'translateY(0)',
-          transition: 'transform 160ms ease'
-        }}>
-          ⚠️ Overcrowding Detected — Current Count: {currentCount}
-        </div>
-      ) : (
-        <div style={{
-          backgroundColor: '#0b5f3a',
-          color: 'white',
-          padding: '10px 20px',
-          borderRadius: '10px',
-          fontSize: '1.1rem',
-          fontWeight: 600,
-          display: 'inline-block',
-          boxShadow: '0 0 10px rgba(0,255,150,0.12)'
-        }}>
-          ✅ Safe — Current Count: {currentCount}
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          boxShadow: `0 0 20px ${risk.color}`,
+          animation: risk.level === 'CRITICAL' ? 'pulse 1s infinite alternate' : 'none'
+        }}
+      >
+        {risk.text} — Current Count: {currentCount}
+      </div>
+
+      {/* Recent Alerts */}
+      {recentAlerts.length > 0 && (
+        <div
+          style={{
+            marginTop: '20px',
+            background: '#1A1A1A',
+            border: '1px solid #444',
+            borderRadius: '10px',
+            padding: '15px'
+          }}
+        >
+          <div
+            style={{
+              fontSize: '1rem',
+              color: '#ff8c00',
+              fontWeight: 'bold',
+              marginBottom: '10px'
+            }}
+          >
+            📋 Recent Alerts
+          </div>
+
+          {recentAlerts.map((alertItem) => (
+            <div
+              key={alertItem.id}
+              style={{
+                background: '#252525',
+                padding: '10px',
+                borderRadius: '6px',
+                marginBottom: '8px',
+                borderLeft: '3px solid #ff8c00'
+              }}
+            >
+              <div style={{ fontSize: '0.9rem', color: '#FFF', fontWeight: '500' }}>
+                {alertItem.type === 'crowd_surge' && '📈 Crowd Surge'}
+                {alertItem.type === 'crowd_threshold_exceeded' && '⚠️ Threshold Exceeded'}
+              </div>
+              <div
+                style={{
+                  fontSize: '0.8rem',
+                  color: '#AAA',
+                  marginTop: '4px',
+                  display: 'flex',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <span>Count: {alertItem.count}</span>
+                <span>{alertItem.timestamp}</span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Animation CSS (fallback, kept for safety) */}
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
