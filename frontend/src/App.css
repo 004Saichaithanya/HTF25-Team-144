@@ -1,105 +1,175 @@
-/* Reset & Base Styles */
+/* =======================
+   Base Reset & Typography
+======================= */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  transition: all 0.25s ease-in-out;
 }
 
 body {
-  background-color: #0F0F0F;
-  color: #EEE;
-  font-family: 'Orbitron', 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background-color: #f5f6fa; /* subtle light gray */
+  color: #1e1e1e;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-#root {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+a:hover {
+  color: #155ab6;
 }
 
-/* Neon Glow Header Text */
+/* =======================
+   Header
+======================= */
 header {
   text-align: center;
-  font-size: 3.5rem;
-  color: #00F0FF;
-  text-shadow:
-    0 0 5px #00F0FF,
-    0 0 10px #00F0FF,
-    0 0 20px #00F0FF;
+  font-size: 2.5rem;
+  color: #1e1e1e;
+  font-weight: 600;
   margin-bottom: 30px;
 }
 
-/* Card Styles */
+/* =======================
+   Card Styles
+======================= */
 .card {
-  background: #1A1A1A;
-  border: 2px solid #00F0FF;
-  border-radius: 16px;
-  padding: 40px 20px;
-  text-align: center;
-  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
 }
 
 .card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
-/* Graph Container */
-.graph-container {
-  margin: 40px auto;
-  max-width: 1200px;
-  padding: 20px;
-}
-
-/* Video Feed Styling */
+/* =======================
+   Video Feed
+======================= */
 .video-feed {
-  border: 3px solid #00F0FF;
-  border-radius: 12px;
+  border-radius: 8px;
   width: 100%;
   height: auto;
-  box-shadow: 0 0 24px rgba(0, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* Responsive Layout */
+/* =======================
+   Upload Button
+======================= */
+.upload-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.upload-form input[type="file"] {
+  border-radius: 6px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.upload-form button {
+  background: #1a73e8;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.upload-form button:hover {
+  background: #155ab6;
+}
+
+/* =======================
+   Section Titles
+======================= */
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1e1e1e;
+}
+
+/* =======================
+   Controls
+======================= */
+.controls button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.controls .acknowledge {
+  background: #1a73e8;
+  color: white;
+}
+
+.controls .acknowledge:hover {
+  background: #155ab6;
+}
+
+.controls .sound-alarm {
+  background: #e53935;
+  color: white;
+}
+
+.controls .sound-alarm:hover {
+  background: #b71c1c;
+}
+
+/* =======================
+   Uploaded Video Preview
+======================= */
+.uploaded-video {
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* =======================
+   Analytics / Graph Container
+======================= */
+.graph-container {
+  margin: 20px auto;
+  max-width: 1200px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* =======================
+   Responsive Layout
+======================= */
 @media (max-width: 768px) {
   header {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .card {
-    padding: 30px 15px;
+    padding: 20px;
   }
 
   .graph-container {
-    padding: 10px;
+    padding: 15px;
   }
 }
-
-/* Smooth Transitions */
-* {
-  transition: all 0.3s ease-in-out;
-}
-@keyframes glowPulse {
-  0%, 100% {
-    text-shadow:
-      0 0 5px #00F0FF,
-      0 0 10px #00F0FF,
-      0 0 20px #00F0FF;
-  }
-  50% {
-    text-shadow:
-      0 0 10px #00F0FF,
-      0 0 20px #00F0FF,
-      0 0 30px #00F0FF;
-  }
-}
-
-header {
-  animation: glowPulse 2s infinite alternate;
-}
-

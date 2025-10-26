@@ -1,0 +1,7 @@
+best_drone.pt
+__pycache__/
+instance/
+*.pyc
+.env
+venv/
+crowd_data.db
