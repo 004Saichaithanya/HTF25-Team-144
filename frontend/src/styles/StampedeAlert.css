@@ -1,0 +1,72 @@
+.stampede-alert{
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  color: #fff;
+}
+
+.stampede-alert h3{
+  text-align:center;
+  letter-spacing: 0.6px;
+}
+
+/* container for the scrolling alert list (targets inline-styled wrapper) */
+.stampede-alert > div[style]{
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* alert item styling (items have inline style on root div) */
+.stampede-alert div[style] {
+  background: linear-gradient(90deg, rgba(18,18,20,0.6), rgba(12,12,14,0.6));
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-left: 4px solid rgba(255,255,255,0.04); /* inline border-left color will override when present */
+  transition: transform 220ms cubic-bezier(.2,.9,.3,1), box-shadow 220ms ease, background 220ms ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.55);
+}
+
+.stampede-alert div[style]:hover{
+  transform: translateY(-8px);
+  box-shadow: 0 26px 46px rgba(0,0,0,0.65), 0 0 30px rgba(236,72,153,0.04);
+}
+
+/* severity glow: rely on inline border color for main indicator; add subtle aura */
+.stampede-alert div[style]::after{
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  width: calc(100% - 16px);
+  border-radius: 8px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+}
+
+/* header typography inside each alert */
+.stampede-alert .alert-title { font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:0.02em }
+.stampede-alert .alert-sub { color:#b9c7d8; font-size:0.9rem }
+
+/* animated badge for critical items */
+.stampede-alert .critical-badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  background: linear-gradient(90deg,#ff6b6b,#ff1c1c);
+  color:white;
+  font-weight:800;
+  box-shadow: 0 8px 24px rgba(255,28,28,0.18);
+  transform-origin:center;
+  animation: criticalPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes criticalPulse{
+  0%{ transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,28,28,0)); }
+  50%{ transform: scale(1.03); filter: drop-shadow(0 12px 40px rgba(255,28,28,0.12)); }
+  100%{ transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,28,28,0)); }
+}
+
+@media (max-width:700px){
+  .stampede-alert div[style]{ padding:10px }
+}

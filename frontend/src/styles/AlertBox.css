@@ -1,0 +1,100 @@
+.alertbox{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  color: #e6eef8;
+}
+
+/* Primary alert banner (color controlled inline by risk state) */
+.alertbox > div:first-child{
+  border-radius:14px;
+  padding:14px 20px;
+  font-weight:800;
+  letter-spacing:0.01em;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(31,111,235,0.06) inset;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.alertbox > div:first-child::after{
+  /* subtle animated sheen */
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -30%;
+  width: 60%;
+  height: 200%;
+  transform: rotate(-25deg) translateX(-120%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.18), rgba(255,255,255,0.06));
+  filter: blur(10px);
+  animation: sheen 3.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes sheen{
+  to { transform: rotate(-25deg) translateX(220%); }
+}
+
+/* Recent alerts container (targets the inline container) */
+.alertbox > div[style] {
+  background: linear-gradient(180deg, rgba(10,12,16,0.7), rgba(6,8,12,0.55));
+  border-radius:12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding:12px;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+}
+
+/* Individual recent alert items: use attribute selector because items are inline-styled */
+.alertbox [style] > div[style] {
+  background: linear-gradient(90deg, rgba(22,24,30,0.65), rgba(14,16,22,0.6));
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  position:relative;
+  transition: transform 180ms cubic-bezier(.2,.9,.3,1), box-shadow 180ms ease;
+}
+
+.alertbox [style] > div[style]:hover{
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 18px 38px rgba(0,0,0,0.6), 0 0 24px rgba(255,140,0,0.04);
+}
+
+/* Accent stripe – uses inline border-left color when present, otherwise fallback */
+.alertbox [style] > div[style]::before{
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  mix-blend-mode: overlay;
+}
+
+/* Text layout inside each alert */
+.alertbox [style] > div[style] .meta { color: #9fb2c6; font-size: 0.85rem }
+.alertbox [style] > div[style] .title { color: #ffffff; font-weight:700 }
+
+/* small timestamp pill */
+.alertbox .ts-pill{
+  font-size:0.8rem;
+  color:#b4c7d8;
+  background: rgba(255,255,255,0.02);
+  padding:4px 8px;
+  border-radius:999px;
+  align-self:flex-end;
+}
+
+/* compact responsive tweaks */
+@media (max-width:700px){
+  .alertbox > div:first-child{ font-size: 1rem; padding:10px }
+  .alertbox [style] > div[style]{ padding:10px }
+}
